@@ -92,7 +92,8 @@ interface GameState {
         move : number | null
     } [],
     stepNumber : number,
-    xIsNext : boolean
+    xIsNext : boolean,
+    orderAsc : boolean
 }
 
 class Game extends React.Component<unknown,GameState> {
@@ -106,6 +107,7 @@ class Game extends React.Component<unknown,GameState> {
             }],
             stepNumber : 0,
             xIsNext: true,
+            orderAsc: true
         };
     }
 
@@ -131,7 +133,6 @@ class Game extends React.Component<unknown,GameState> {
     jumpTo(step:number){
         this.setState(
         {
-            history: this.state.history,
             stepNumber : step,
             xIsNext : (step % 2) === 0
         })
@@ -141,33 +142,40 @@ class Game extends React.Component<unknown,GameState> {
         return this.state.xIsNext ? 'X' : 'O';
     }
 
+    toggleOrder(){
+        this.setState({
+            orderAsc: !this.state.orderAsc
+        })
+    }
+
     render() {
 
         const history = this.state.history;
         const current = history[this.state.stepNumber];
         const winner = calculateWinner(current.squares);
 
-        const moves = history.map((step,move)=>{
+        const moves = history.map((step,idx)=>{
             let  colRowStr;
-            if( step.move ) {
+            if( step.move === null ) {
+                colRowStr = "";
+             } else {
                 const [row,col] = indexToRowCol(step.move);
                 colRowStr = `:(${row},${col})`;
-            } else {
-                colRowStr = "";
             }
-
-            const desc = move ? 
-                "Go to move #" + move + colRowStr
+            const desc = ( step.move !== null ) ? 
+                "Go to move #" + step.move + colRowStr
                 : "Got to game start";
-            const fontWeight = ( move === this.state.stepNumber ) ? "bold" : "normal";
-            return <li key={move}>
+            const fontWeight = ( idx === this.state.stepNumber ) ? "bold" : "normal";
+            return <li key={step.move}>
                         <button
                             className="history-button"
                             style={ {fontWeight: fontWeight} }
-                            onClick={() => this.jumpTo(move)}
+                            onClick={() => this.jumpTo(idx)}
                         >{desc}</button>
                     </li>;
         });
+
+        const moves2 = this.state.orderAsc ? moves : moves.reverse();
 
         let status;
         if( winner ){
@@ -185,7 +193,9 @@ class Game extends React.Component<unknown,GameState> {
                 </div>
                 <div className="game-info">
                     <div>{status}</div>
-                    <ol>{moves}</ol>
+                    <button onClick={ () => this.toggleOrder() }
+                        >toggle step order</button>
+                    <ol>{moves2}</ol>
                 </div>
             </div>
         );
