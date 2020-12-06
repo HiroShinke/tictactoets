@@ -163,6 +163,7 @@ class Game extends React.Component<unknown,GameState> {
                 : "Got to game start";
             return <li key={move}>
                         <button
+                            className="history-button"
                             onClick={() => this.jumpTo(move)}
                         >{desc}</button>
                     </li>;
