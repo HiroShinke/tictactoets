@@ -6,7 +6,7 @@ import './index.css';
 
 type SquaresType = (string | null) [];
 
-function calculateWinner(squares : SquaresType ) {
+function calculateWinner(squares : SquaresType) {
     const lines = [
         [0, 1, 2],
         [3, 4, 5],
@@ -25,6 +25,14 @@ function calculateWinner(squares : SquaresType ) {
         }
     }
     return null;
+}
+
+function indexToRowCol(index : number) : [number,number] {
+    const mappings : [number,number][] = 
+    [[1,1],[1,2],[1,3],
+     [2,1],[2,2],[2,3],
+     [3,1],[3,2],[3,3]];
+    return mappings[index];
 }
 
 interface SquareProps {
@@ -81,7 +89,10 @@ class Board extends React.Component<BoardProps> {
 }
 
 interface GameState {
-    history : { squares : SquaresType} [],
+    history : { 
+        squares : SquaresType,
+        move : number | null
+    } [],
     stepNumber : number,
     xIsNext : boolean
 }
@@ -93,6 +104,7 @@ class Game extends React.Component<unknown,GameState> {
         this.state = {
             history: [{
                 squares: Array(9).fill(null),
+                move : null
             }],
             stepNumber : 0,
             xIsNext: true,
@@ -109,7 +121,9 @@ class Game extends React.Component<unknown,GameState> {
         squares[i] = this.nextPlayer()
         this.setState({
             history: history.concat([
-                { squares: squares }
+                { squares: squares,
+                  move: i
+                } 
             ]),
             stepNumber: history.length,
             xIsNext: !this.state.xIsNext
@@ -136,10 +150,19 @@ class Game extends React.Component<unknown,GameState> {
         const winner = calculateWinner(current.squares);
 
         const moves = history.map((step,move)=>{
+            let  colRowStr;
+            if( step.move ) {
+                const [row,col] = indexToRowCol(step.move);
+                colRowStr = `:(${row},${col})`;
+            } else {
+                colRowStr = "";
+            }
+
             const desc = move ? 
-                "Go to move #" + move : "Got to game start";
+                "Go to move #" + move + colRowStr
+                : "Got to game start";
             return <li key={move}>
-                        <button 
+                        <button
                             onClick={() => this.jumpTo(move)}
                         >{desc}</button>
                     </li>;
