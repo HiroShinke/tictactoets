@@ -1,12 +1,13 @@
 
-import React from 'react';
+import React, { CSSProperties } from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
 
 type SquaresType = (string | null) [];
 
-function calculateWinner(squares : SquaresType) {
+function calculateWinner(squares : SquaresType)
+: [string|null,number,number,number] | null {
     const lines = [
         [0, 1, 2],
         [3, 4, 5],
@@ -15,13 +16,13 @@ function calculateWinner(squares : SquaresType) {
         [1, 4, 7],
         [2, 5, 8],
         [0, 4, 8],
-        [2, 4, 5]
+        [2, 4, 6]
     ];
     for (const [a, b, c] of lines) {
         if (squares[a] &&
             squares[a] === squares[b] &&
             squares[b] === squares[c]) {
-            return squares[a];
+            return [squares[a],a,b,c];
         }
     }
     return null;
@@ -37,7 +38,8 @@ function indexToRowCol(index : number) : [number,number] {
 
 interface SquareProps {
     onClick : () => void,
-    value : string | null
+    value : string | null,
+    style : CSSProperties
 }
 
 function Square(props : SquareProps) {
@@ -45,6 +47,7 @@ function Square(props : SquareProps) {
         <button
             className="square"
             onClick={() => props.onClick()}
+            style={props.style}
         >
             {props.value}
         </button>
@@ -53,14 +56,28 @@ function Square(props : SquareProps) {
 
 interface BoardProps {
     onClick : (n: number) => void,
-    squares: SquaresType
+    squares: SquaresType,
+    winnerCells : [number,number,number] | null
 }
 
 class Board extends React.Component<BoardProps> {
 
     renderSquare(i: number) {
+
+        let style;
+        if( this.props.winnerCells ){
+            const [a,b,c] = this.props.winnerCells;
+            if (i === a || i === b || i === c )  {
+                style = { background : "#999" };
+            } else {
+                style = {};
+            }
+        } else {
+            style = {};
+        }
         return <Square
             value={this.props.squares[i]}
+            style={style}
             onClick={() => this.props.onClick(i)}
         />;
     }
@@ -152,8 +169,15 @@ class Game extends React.Component<unknown,GameState> {
 
         const history = this.state.history;
         const current = history[this.state.stepNumber];
-        const winner = calculateWinner(current.squares);
-
+        const winnerArray = calculateWinner(current.squares);
+        let winner;
+        let abc : [number,number,number] | null;
+        if( winnerArray ){
+            [winner,...abc] = winnerArray;            
+        } else {
+            winner = null;
+            abc = null;
+        }
         const moves = history.map((step,idx)=>{
             let  colRowStr;
             if( step.move === null ) {
@@ -188,6 +212,7 @@ class Game extends React.Component<unknown,GameState> {
                 <div className="game-board">
                     <Board 
                         squares={current.squares}
+                        winnerCells={abc}
                         onClick={(i) => this.handleClick(i) }
                     />
                 </div>
