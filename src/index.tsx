@@ -68,7 +68,7 @@ class Board extends React.Component<BoardProps> {
         if( this.props.winnerCells ){
             const [a,b,c] = this.props.winnerCells;
             if (i === a || i === b || i === c )  {
-                style = { background : "#999" };
+                style = { background : "#ff9" };
             } else {
                 style = {};
             }
@@ -204,6 +204,8 @@ class Game extends React.Component<unknown,GameState> {
         let status;
         if( winner ){
             status = 'Winner: ' + winner;
+        } else if( this.state.stepNumber >= 9) {
+            status = "Draw!!";
         } else {
             status = 'Next player: ' + this.nextPlayer();
         }
